@@ -1,5 +1,6 @@
 from abc import ABC
 from time import sleep
+from copy import deepcopy
 
 # 2
 """
@@ -8,7 +9,7 @@ The following implementation is meant for inspiration and not necessary for the
 completion of the battleship class on INFO135 lab 12.
 Note that the level of complexity on completing a finished game is above
 what is expected on assignments, lab tasks and the exam - the main point to
-pay attention to here is the use OO to divide different functionality of the game into different classes.
+pay attention to here is the use of OO to divide different functionality of the game into different classes.
 
 Also, feel free to try the game! :)
 """
@@ -36,9 +37,9 @@ class BattleshipGame:
             # For a faster game, remove some of the ships
             # c = Carrier(p)
             # b = Battleship(p)
-            # s = Submarine(p)
+            s = Submarine(p)
             d = Destroyer(p)
-            ships = [d]
+            ships = [s, d]
 
             # place all ships
             for s in ships:
@@ -133,6 +134,7 @@ class Grid:
     def __init__(self):
         self.gridsize = 10  # hardcoded - could also be variable
         self.g = [["o" for _ in range(self.gridsize)] for _ in range(self.gridsize)]
+        self.backup_g = deepcopy(self.g) # keep a copy of original ship positions for sinking functionality
         # to track if the whole ship is gone
         self.ship_amounts = {}
 
@@ -223,8 +225,9 @@ class Grid:
         print("A ship has been sunk!")
         for r in range(self.gridsize):
             for c in range(self.gridsize):
-                if self.g[r][c] == ship_symbol:
+                if self.backup_g[r][c] == ship_symbol:
                     self.g[r][c] = 'x'
+            print()
 
     def place_ship(self, ship_size, ship_symbol):
         '''
@@ -264,9 +267,11 @@ class Grid:
                 if orient == "H":
                     for c in range(ship_size):
                         self.update_grid(row, c + col, ship_symbol)
+                        self.backup_g[row][c + col] = ship_symbol
                 else:
                     for r in range(ship_size):
                         self.update_grid(row - r, col, ship_symbol)
+                        self.backup_g[row - r][col] = ship_symbol
                 # add an entry to track if the ship is gone
                 self.ship_amounts[ship_symbol] = ship_size
 
